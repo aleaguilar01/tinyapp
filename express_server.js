@@ -27,6 +27,13 @@ app.get("/urls", (req, res) => {
 });
 
 /**
+ * Endpoint to fetch the form to submit a long URL.
+ */
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
+/**
  * Endpoint to fetch one url saved in the database
  * @param id refers to the short url id.
  * @returns Individual Url Page.
