@@ -14,6 +14,21 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
+const lenghtOfId = 6;
+
+const generateRandomString = (lenghtOfId) => {
+  let str = "";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let n = 0;
+  while (n < lenghtOfId) {
+    str += characters[Math.floor(Math.random() * characters.length + 1)];
+    n ++;
+  }
+  return str;
+};
+
+console.log(generateRandomString(6));
+
 app.use(express.urlencoded({ extended: true }));
 
 
