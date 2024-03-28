@@ -1,3 +1,8 @@
+/**
+ * Backend endpoint colecction for TinyApp.
+ * @author Alejandra Aguilar
+ */
+
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -13,11 +18,19 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+/**
+ * Endpoint to fetch all urls saved in the database
+ */
 app.get("/urls", (req, res) => {
   const urls = { urls: urlDatabase};
   res.render("urls_index", urls);
 });
 
+/**
+ * Endpoint to fetch one url saved in the database
+ * @param id refers to the short url id.
+ * @returns Individual Url Page.
+ */
 app.get(`/urls/:id`, (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
