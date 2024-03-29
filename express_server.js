@@ -7,13 +7,17 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
+//configuration for view engine as ejs
 app.set("view engine", "ejs");
+
+// encoding for urls
+app.use(express.urlencoded({ extended: true }));
+
 
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
-
 
 /**
  * Function to generate a random string thar will be use as a unique identifier for tinyurls
@@ -31,8 +35,6 @@ const generateRandomString = (lenghtOfId) => {
   return randomString;
 };
 
-app.use(express.urlencoded({ extended: true }));
-
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -42,7 +44,7 @@ app.get("/", (req, res) => {
  * Endpoint to create tiny urls and save them in memory database
  */
 app.post("/urls", (req, res) => {
-  const uuid = generateRandomString(6)
+  const uuid = generateRandomString(6);
   urlDatabase[uuid] = req.body.longURL;
   res.redirect(`/urls/${uuid}`);
 });
@@ -73,10 +75,18 @@ app.get(`/urls/:id`, (req, res) => {
   res.render("urls_show.ejs", {id, longURL});
 });
 
+app.get("/u/:id", (req, res) => {
+  const id = req.params.id;
+  const longURL = urlDatabase[id];
+  res.redirect(longURL);
+});
+
+
 app.get("/hello", (req, res) => {
   const templateVars = { greeting: "Hello World!" };
   res.render("hello_world", templateVars);
 });
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
