@@ -4,6 +4,7 @@
  */
 
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -12,6 +13,7 @@ app.set("view engine", "ejs");
 
 // encoding for urls
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
@@ -73,15 +75,16 @@ app.post("/login", (req, res) => {
  * Endpoint to fetch all urls saved in the database
  */
 app.get("/urls", (req, res) => {
-  const urls = { urls: urlDatabase };
-  res.render("urls_index", urls);
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  res.render("urls_index", templateVars);
 });
 
 /**
  * Endpoint to fetch the form to submit a long URL.
  */
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { username: req.cookies["username"] };
+  res.render("urls_new", templateVars);
 });
 
 /**
@@ -92,7 +95,8 @@ app.get("/urls/new", (req, res) => {
 app.get(`/urls/:id`, (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  res.render("urls_show.ejs", { id, longURL });
+  const templateVars = { id, longURL, username: req.cookies["username"] };
+  res.render("urls_show.ejs", templateVars);
 });
 
 /**
