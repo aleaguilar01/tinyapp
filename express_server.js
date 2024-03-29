@@ -14,20 +14,22 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
-const lenghtOfId = 6;
 
+/**
+ * Function to generate a random string thar will be use as a unique identifier for tinyurls
+ * @param {number} lenghtOfId
+ * @returns {string}
+ */
 const generateRandomString = (lenghtOfId) => {
-  let str = "";
+  let randomString = "";
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let n = 0;
   while (n < lenghtOfId) {
-    str += characters[Math.floor(Math.random() * characters.length + 1)];
+    randomString += characters[Math.floor(Math.random() * characters.length + 1)];
     n ++;
   }
-  return str;
+  return randomString;
 };
-
-console.log(generateRandomString(6));
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,9 +38,13 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+/**
+ * Endpoint to create tiny urls and save them in memory database
+ */
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  const uuid = generateRandomString(6)
+  urlDatabase[uuid] = req.body.longURL;
+  res.redirect(`/urls/${uuid}`);
 });
 
 /**
