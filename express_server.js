@@ -64,6 +64,11 @@ app.post(`/urls/:id`, (req, res) => {
   res.redirect("/urls");
 });
 
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect("/urls");
+});
+
 /**
  * Endpoint to fetch all urls saved in the database
  */
