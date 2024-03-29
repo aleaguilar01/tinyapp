@@ -46,6 +46,12 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${uuid}`);
 });
 
+app.post("/urls/:id/delete", (req, res) => {
+  const id = req.params.id;
+  delete urlDatabase[id];
+  res.redirect("/urls");
+});
+
 /**
  * Endpoint to fetch all urls saved in the database
  */
