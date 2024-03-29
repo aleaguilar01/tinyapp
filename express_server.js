@@ -13,7 +13,6 @@ app.set("view engine", "ejs");
 // encoding for urls
 app.use(express.urlencoded({ extended: true }));
 
-
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
@@ -26,15 +25,13 @@ const urlDatabase = {
  */
 const generateRandomString = (lenghtOfId) => {
   let randomString = "";
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let n = 0;
-  while (n < lenghtOfId) {
-    randomString += characters[Math.floor(Math.random() * characters.length + 1)];
-    n ++;
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (let n = 0; n < lenghtOfId; n++) {
+    randomString += characters[Math.floor(Math.random() * characters.length)];
   }
   return randomString;
 };
-
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -53,7 +50,7 @@ app.post("/urls", (req, res) => {
  * Endpoint to fetch all urls saved in the database
  */
 app.get("/urls", (req, res) => {
-  const urls = { urls: urlDatabase};
+  const urls = { urls: urlDatabase };
   res.render("urls_index", urls);
 });
 
@@ -72,7 +69,7 @@ app.get("/urls/new", (req, res) => {
 app.get(`/urls/:id`, (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  res.render("urls_show.ejs", {id, longURL});
+  res.render("urls_show.ejs", { id, longURL });
 });
 
 app.get("/u/:id", (req, res) => {
@@ -81,12 +78,10 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-
 app.get("/hello", (req, res) => {
   const templateVars = { greeting: "Hello World!" };
   res.render("hello_world", templateVars);
 });
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
