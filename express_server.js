@@ -46,6 +46,9 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${uuid}`);
 });
 
+/**
+ * Endpoint to delete urls from database.
+ */
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
   delete urlDatabase[id];
@@ -78,6 +81,9 @@ app.get(`/urls/:id`, (req, res) => {
   res.render("urls_show.ejs", { id, longURL });
 });
 
+/**
+ * Endpoint to redirect to long URL.
+ */
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
