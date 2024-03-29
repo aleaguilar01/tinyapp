@@ -55,6 +55,9 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 });
 
+/**
+ * Endpoint to update urls on database.
+ */
 app.post(`/urls/:id`, (req, res) => {
   const id = req.params.id;
   urlDatabase[id] = req.body.updatedURL;
