@@ -133,6 +133,14 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+/**
+ * Endpoint to fetch the registration page
+ */
+app.get("/register", (req, res) => {
+  res.render("register.ejs");
+});
+
+
 app.get("/hello", (req, res) => {
   const templateVars = { greeting: "Hello World!" };
   res.render("hello_world", templateVars);
