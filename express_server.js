@@ -66,8 +66,20 @@ app.post(`/urls/:id`, (req, res) => {
   res.redirect("/urls");
 });
 
+/**
+ * Endpoint to login user.
+ */
 app.post("/login", (req, res) => {
   res.cookie('username', req.body.username);
+  res.redirect("/urls");
+});
+
+/**
+ * Endpoint to logout user.
+ */
+app.post("/logout", (req, res) => {
+  //res.cookie('username', null,{ expires: Date.now()});
+  res.clearCookie("username");
   res.redirect("/urls");
 });
 
@@ -75,7 +87,10 @@ app.post("/login", (req, res) => {
  * Endpoint to fetch all urls saved in the database
  */
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  const templateVars = { urls: urlDatabase};
+  if (req.cookies["username"]) {
+    templateVars["username"] = req.cookies["username"];
+  }
   res.render("urls_index", templateVars);
 });
 
@@ -83,7 +98,10 @@ app.get("/urls", (req, res) => {
  * Endpoint to fetch the form to submit a long URL.
  */
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = {};
+  if (req.cookies["username"]) {
+    templateVars["username"] = req.cookies["username"];
+  }
   res.render("urls_new", templateVars);
 });
 
@@ -95,7 +113,10 @@ app.get("/urls/new", (req, res) => {
 app.get(`/urls/:id`, (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  const templateVars = { id, longURL, username: req.cookies["username"] };
+  const templateVars = { id, longURL };
+  if (req.cookies["username"]) {
+    templateVars["username"] = req.cookies["username"];
+  }
   res.render("urls_show.ejs", templateVars);
 });
 
@@ -105,6 +126,10 @@ app.get(`/urls/:id`, (req, res) => {
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
+  const templateVars = {};
+  if (req.cookies["username"]) {
+    templateVars["username"] = req.cookies["username"];
+  }
   res.redirect(longURL);
 });
 
