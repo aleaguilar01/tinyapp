@@ -228,6 +228,13 @@ app.get("/register", (req, res) => {
   res.render("register.ejs");
 });
 
+/**
+ * Endpoint to fetch the login page
+ */
+app.get("/login", (req, res) => {
+  res.render("login.ejs");
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
