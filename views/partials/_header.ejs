@@ -31,15 +31,8 @@
         </button>
       </form>
       <% } else {%>
-      <form method="POST" action="/login">
-        <input
-          name="username"
-          type="text"
-          placeholder="Username"
-          style="margin: 10px"
-        />
-        <button type="submit" class="btn btn-outline-dark">Login</button>
-      </form>
+        <a href="/login", class="btn btn-outline-dark">Login</a>
+        <a href="/register", class="btn btn-outline-dark">Register</a>
       <% } %>
     </div>
   </nav>
