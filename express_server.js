@@ -8,6 +8,7 @@
  */
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const e = require("express");
 
 /**
  * Express initialization
@@ -35,12 +36,12 @@ const urlDatabase = {
  * users database
  */
 const users = {
-  userRandomID: {
+  "user@example.com": {
     id: "userRandomID",
     email: "user@example.com",
     password: "purple-monkey-dinosaur",
   },
-  user2RandomID: {
+  "user2@example.com": {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk",
@@ -134,8 +135,18 @@ app.post("/logout", (req, res) => {
  * Endpoint to update the users database.
  */
 app.post("/register", (req, res) => {
-  const userId = generateRandomString(6);
+  console.log("users before", users);
   const email = req.body.email;
+  const userAlreadyOnDatabase = getUserByEmail(email, users);
+  console.log("user checking:", userAlreadyOnDatabase);
+  console.log("users after", users);
+
+  if (userAlreadyOnDatabase || !email || !req.body.password) {
+    console.log("here");
+    res.status(400).redirect("/status400");
+  }
+
+  const userId = generateRandomString(6);
   users[email] = {
     id: userId,
     email,
@@ -155,9 +166,6 @@ app.get("/urls", (req, res) => {
   if (req.cookies["user_id"]) {
     const userID = req.cookies["user_id"];
     const user = users[userID];
-    console.log("userID", userID);
-    console.log("user", user);
-    
     if (user) {
       templateVars.user = user;
     }
@@ -223,6 +231,15 @@ app.get("/register", (req, res) => {
   res.render("register.ejs");
 });
 
+/**
+ * Endpoint to fetch status 400 page
+ */
+app.get("/status400", (req, res) => {
+  res.render("status400.ejs");
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
