@@ -46,6 +46,9 @@ const users = {
     password: "dishwasher-funk",
   },
 };
+
+/////////////////////////////////// HELPERS ///////////////////////////////////////////////
+
 /**
  * Function to generate a random string thar will be use as a unique identifier for tinyurls
  * @param {number} lenghtOfId
@@ -60,6 +63,24 @@ const generateRandomString = (lenghtOfId) => {
   }
   return randomString;
 };
+
+/**
+ * Function to check if an user exists into the database.
+ * NOTE: THIS FUNCTION REQUIRED TO LOOK FOR EACH USER BY IT´S ID,
+ * BUT I THOUGHT THAT IF WE STORED THE USER WITH THE EMAIL INSTEAD OF THE ID,
+ * WE WOULDN'T HAVE TO LOOP THROUGH THE OBJECT, JUST LOOK FOR THE KEY.
+ * @param {string} email
+ * @param {object} database
+ * @returns {object}
+ */
+
+const getUserByEmail = (email, database) => {
+  if (database[email]) {
+    return database[email];
+  } else return null;
+};
+
+/////////////////////////////////// ENDPOINTS ///////////////////////////////////////////////
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -114,12 +135,13 @@ app.post("/logout", (req, res) => {
  */
 app.post("/register", (req, res) => {
   const userId = generateRandomString(6);
-  users[userId] = {
+  const email = req.body.email;
+  users[email] = {
     id: userId,
-    email: req.body.email,
+    email,
     password: req.body.password
   };
-  res.cookie('user_id', userId);
+  res.cookie('user_id', email);
   res.redirect(`/urls`);
 });
 
@@ -133,6 +155,9 @@ app.get("/urls", (req, res) => {
   if (req.cookies["user_id"]) {
     const userID = req.cookies["user_id"];
     const user = users[userID];
+    console.log("userID", userID);
+    console.log("user", user);
+    
     if (user) {
       templateVars.user = user;
     }
