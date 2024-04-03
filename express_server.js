@@ -118,8 +118,16 @@ app.post(`/urls/:id`, (req, res) => {
  * Endpoint to login user.
  */
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect("/urls");
+  const email = req.body.email;
+  const password = req.body.password;
+  if (getUserByEmail(email, users) !== null) {
+    if (password === users[email].password) {
+      res.cookie("user_id", users[email].email);
+      res.redirect("/urls");
+    } else res.status(403).send("Password incorrect. Please try again.");
+  } else {
+    res.status(403).send("User can not be found. Please login with a correct email or register first.");
+  }
 });
 
 /**
