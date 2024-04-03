@@ -23,8 +23,13 @@
 
     <main style="margin: 1em;">
       <h1>STATUS 400</h1>
-      <P>Unable to create User. 
-        Check if email already exists and if you are entering a correct mail and password</P>
+      <P>Unable to create User.
+         <% let str = ""; %>
+         <% if (locals.userAlreadyOnDatabase !== null) str += "User already on data base. " %>
+         <% if (!locals.email) str += "Email field is empty, please provide an email. " %>
+         <% if (!locals.password) str += "Password field is empty, please provide a password. " %>
+         <%= str %>
+        </P>
     </main>
     <!-- Bootstrap JS -->
     <script

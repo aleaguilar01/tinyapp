@@ -126,8 +126,7 @@ app.post("/login", (req, res) => {
  * Endpoint to logout user.
  */
 app.post("/logout", (req, res) => {
-  //res.cookie('username', null,{ expires: Date.now()});
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
@@ -135,25 +134,23 @@ app.post("/logout", (req, res) => {
  * Endpoint to update the users database.
  */
 app.post("/register", (req, res) => {
-  console.log("users before", users);
   const email = req.body.email;
+  const password = req.body.password;
   const userAlreadyOnDatabase = getUserByEmail(email, users);
-  console.log("user checking:", userAlreadyOnDatabase);
-  console.log("users after", users);
-
-  if (userAlreadyOnDatabase || !email || !req.body.password) {
-    console.log("here");
-    res.status(400).redirect("/status400");
+  if (userAlreadyOnDatabase || !email || !password) {
+    const templateVars = {userAlreadyOnDatabase, email, password};
+    console.log(templateVars);
+    res.status(400).render("status400.ejs", templateVars);
+  } else {
+    const userId = generateRandomString(6);
+    users[email] = {
+      id: userId,
+      email,
+      password: req.body.password
+    };
+    res.cookie('user_id', email);
+    res.redirect(`/urls`);
   }
-
-  const userId = generateRandomString(6);
-  users[email] = {
-    id: userId,
-    email,
-    password: req.body.password
-  };
-  res.cookie('user_id', email);
-  res.redirect(`/urls`);
 });
 
 /**
@@ -229,13 +226,6 @@ app.get("/u/:id", (req, res) => {
  */
 app.get("/register", (req, res) => {
   res.render("register.ejs");
-});
-
-/**
- * Endpoint to fetch status 400 page
- */
-app.get("/status400", (req, res) => {
-  res.render("status400.ejs");
 });
 
 app.listen(PORT, () => {
