@@ -19,8 +19,8 @@
       </div>
     </div>
     <div>
-      <% if(locals.username !== undefined && username !== "undefined") { %> 
-        <%= username %>
+      <% if(locals.user !== undefined && user !== "undefined") { %> 
+        <%= user.email %>
       <form method="POST" action="/logout">
         <button
           type="submit"
