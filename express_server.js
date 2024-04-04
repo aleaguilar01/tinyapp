@@ -89,9 +89,13 @@ app.get("/", (req, res) => {
  * Endpoint to create tiny urls and save them in memory database
  */
 app.post("/urls", (req, res) => {
-  const uuid = generateRandomString(6);
-  urlDatabase[uuid] = req.body.longURL;
-  res.redirect(`/urls/${uuid}`);
+  if (!req.cookies["user_id"]) {
+    res.render("not_login.ejs");
+  } else {
+    const uuid = generateRandomString(6);
+    urlDatabase[uuid] = req.body.longURL;
+    res.redirect(`/urls/${uuid}`);
+  }
 });
 
 /**
@@ -181,15 +185,19 @@ app.get("/urls", (req, res) => {
  * Endpoint to fetch the form to submit a long URL.
  */
 app.get("/urls/new", (req, res) => {
-  const templateVars = {};
-  if (req.cookies["user_id"]) {
-    const userID = req.cookies["user_id"];
-    const user = users[userID];
-    if (user) {
-      templateVars.user = user;
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  } else {
+    const templateVars = {};
+    if (req.cookies["user_id"]) {
+      const userID = req.cookies["user_id"];
+      const user = users[userID];
+      if (user) {
+        templateVars.user = user;
+      }
     }
+    res.render("urls_new", templateVars);
   }
-  res.render("urls_new", templateVars);
 });
 
 /**
