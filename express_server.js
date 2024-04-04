@@ -233,7 +233,11 @@ app.get("/u/:id", (req, res) => {
       templateVars.user = user;
     }
   }
-  res.redirect(longURL);
+  if (!urlDatabase[id]) {
+    res.status(404).render("status404.ejs");
+  } else {
+    res.redirect(longURL);
+  }
 });
 
 /**
