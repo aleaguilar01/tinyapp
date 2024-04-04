@@ -229,17 +229,26 @@ app.get("/u/:id", (req, res) => {
 });
 
 /**
- * Endpoint to fetch the registration page
+ * Endpoint to fetch the registration page if the user is not already loged in
  */
 app.get("/register", (req, res) => {
-  res.render("register.ejs");
+  if (!req.cookies["user_id"]) {
+    res.render("register.ejs");
+  } else {
+    res.redirect("/urls");
+  }
 });
 
 /**
  * Endpoint to fetch the login page
  */
 app.get("/login", (req, res) => {
-  res.render("login.ejs");
+  if (!req.cookies["user_id"]) {
+    res.render("login.ejs");
+  } else {
+    res.redirect("/urls");
+  }
+  
 });
 
 app.listen(PORT, () => {
