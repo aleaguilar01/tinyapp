@@ -75,9 +75,9 @@ const generateRandomString = (lenghtOfId) => {
  * @returns {object}
  */
 
-const getUserByEmail = (email, database) => {
-  if (database[email]) {
-    return database[email];
+const getUserById = (id, database) => {
+  if (database[id]) {
+    return database[id];
   } else return null;
 };
 
@@ -120,9 +120,10 @@ app.post(`/urls/:id`, (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  if (getUserByEmail(email, users) !== null) {
+  const id = users[email].id;
+  if (getUserById(id, users) !== null) {
     if (password === users[email].password) {
-      res.cookie("user_id", users[email].email);
+      res.cookie("user_id", users[email].id);
       res.redirect("/urls");
     } else res.status(403).send("Password incorrect. Please try again.");
   } else {
@@ -144,7 +145,8 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const userAlreadyOnDatabase = getUserByEmail(email, users);
+  const id = users[email].id;
+  const userAlreadyOnDatabase = getUserById(id, users);
   if (userAlreadyOnDatabase || !email || !password) {
     const templateVars = {userAlreadyOnDatabase, email, password};
     console.log(templateVars);
