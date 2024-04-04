@@ -25,7 +25,7 @@
       <h1>STATUS 400</h1>
       <P>Unable to create User.
          <% let str = ""; %>
-         <% if (locals.userAlreadyOnDatabase !== null) str += "User already on data base. " %>
+         <% if (exisitingUser) str += "User already on data base. " %>
          <% if (!locals.email) str += "Email field is empty, please provide an email. " %>
          <% if (!locals.password) str += "Password field is empty, please provide a password. " %>
          <%= str %>

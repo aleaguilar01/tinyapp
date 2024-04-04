@@ -8,7 +8,6 @@
  */
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const e = require("express");
 
 /**
  * Express initialization
@@ -36,12 +35,12 @@ const urlDatabase = {
  * users database
  */
 const users = {
-  "user@example.com": {
+  userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
     password: "purple-monkey-dinosaur",
   },
-  "user2@example.com": {
+  user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk",
@@ -52,14 +51,14 @@ const users = {
 
 /**
  * Function to generate a random string thar will be use as a unique identifier for tinyurls
- * @param {number} lenghtOfId
+ * @param {number} lengthOfId
  * @returns {string}
  */
-const generateRandomString = (lenghtOfId) => {
+const generateRandomString = (lengthOfId) => {
   let randomString = "";
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let n = 0; n < lenghtOfId; n++) {
+  for (let n = 0; n < lengthOfId; n++) {
     randomString += characters[Math.floor(Math.random() * characters.length)];
   }
   return randomString;
@@ -67,24 +66,23 @@ const generateRandomString = (lenghtOfId) => {
 
 /**
  * Function to check if an user exists into the database.
- * NOTE: THIS FUNCTION REQUIRED TO LOOK FOR EACH USER BY IT´S ID,
- * BUT I THOUGHT THAT IF WE STORED THE USER WITH THE EMAIL INSTEAD OF THE ID,
- * WE WOULDN'T HAVE TO LOOP THROUGH THE OBJECT, JUST LOOK FOR THE KEY.
- * @param {string} email
+ * @param {string} id
  * @param {object} database
  * @returns {object}
  */
 
-const getUserById = (id, database) => {
-  if (database[id]) {
-    return database[id];
-  } else return null;
+const getUserByEmail = (email) => {
+  const id = Object.keys(users).find(key => users[key].email === email);
+  if (id) {
+    return users[id];
+  }
+  return null;
 };
 
 /////////////////////////////////// ENDPOINTS ///////////////////////////////////////////////
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 
 /**
@@ -120,10 +118,11 @@ app.post(`/urls/:id`, (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const id = users[email].id;
-  if (getUserById(id, users) !== null) {
-    if (password === users[email].password) {
-      res.cookie("user_id", users[email].id);
+  const user = getUserByEmail(email);
+  if (user !== null) {
+    const id = user.id;
+    if (password === users[id].password) {
+      res.cookie("user_id", users[id].id);
       res.redirect("/urls");
     } else res.status(403).send("Password incorrect. Please try again.");
   } else {
@@ -140,25 +139,23 @@ app.post("/logout", (req, res) => {
 });
 
 /**
- * Endpoint to update the users database.
+ * Endpoint to register users and update the database.
  */
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const id = users[email].id;
-  const userAlreadyOnDatabase = getUserById(id, users);
-  if (userAlreadyOnDatabase || !email || !password) {
-    const templateVars = {userAlreadyOnDatabase, email, password};
-    console.log(templateVars);
+  const exisitingUser = getUserByEmail(email);
+  if (exisitingUser || !email || !password) {
+    const templateVars = {exisitingUser, email, password};
     res.status(400).render("status400.ejs", templateVars);
   } else {
     const userId = generateRandomString(6);
-    users[email] = {
+    users[userId] = {
       id: userId,
       email,
-      password: req.body.password
+      password
     };
-    res.cookie('user_id', email);
+    res.cookie('user_id', users[userId].id);
     res.redirect(`/urls`);
   }
 });

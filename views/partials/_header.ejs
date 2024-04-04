@@ -19,7 +19,7 @@
       </div>
     </div>
     <div>
-      <% if(locals.user !== undefined && user !== "undefined") { %> 
+      <% if(locals.user) { %> 
         <%= user.email %>
       <form method="POST" action="/logout">
         <button
