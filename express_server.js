@@ -8,6 +8,7 @@
  */
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 
 /**
  * Express initialization
@@ -48,17 +49,17 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    password: "$2a$10$tQBY1/PYoEWfIy7UxJGJa.AYJMeOLrAopwm8uyrqhLCOIoP6uSkPm", // purple-monkey-dinosaur
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: "$2a$10$gH.prLh7OmsRjA8b.G/4WO5BcnrUTZo7BZddvfYogyw/fC6WYQ0ri", // dishwasher-funk
   },
   xvdrz: {
     id: "xvdrz",
     email: "test@e.com",
-    password: "123",
+    password: "$2a$10$ai7poc2uDWfge5obkwS1kuTKbHG8NtYg9l71i/kbFzUD3LTO99nm2", // 123
   },
 };
 
@@ -201,7 +202,7 @@ app.post("/login", (req, res) => {
   const user = getUserByEmail(email);
   if (user !== null) {
     const id = user.id;
-    if (password === users[id].password) {
+    if (bcrypt.compareSync(password, users[id].password)) {
       res.cookie("user_id", users[id].id);
       res.redirect("/urls");
     } else res.status(403).send("Password incorrect. Please try again.");
@@ -229,11 +230,12 @@ app.post("/register", (req, res) => {
     const templateVars = {exisitingUser, email, password};
     res.status(400).render("status400.ejs", templateVars);
   } else {
+    const hashedPassword = bcrypt.hashSync(password, 10);
     const userId = generateRandomString(6);
     users[userId] = {
       id: userId,
       email,
-      password
+      password: hashedPassword
     };
     res.cookie('user_id', users[userId].id);
     res.redirect(`/urls`);
