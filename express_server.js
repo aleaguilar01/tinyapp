@@ -151,9 +151,27 @@ app.post("/urls/:id/delete", (req, res) => {
  * Endpoint to update urls on database.
  */
 app.post(`/urls/:id`, (req, res) => {
-  const id = req.params.id;
-  urlDatabase[id].longURL = req.body.updatedURL;
-  res.redirect("/urls");
+  const userId = req.cookies["user_id"];
+  if (!userId) {
+    res.status(401).render("status401");
+  } else {
+    const id = req.params.id;
+    const urlObject = urlDatabase[id];
+    if (urlObject) {
+      if (urlObject.userID === userId) {
+        urlDatabase[id].longURL = req.body.updatedURL;
+        res.redirect("/urls");
+      } else {
+        res.status(403).render("status403");
+      }
+    } else {
+      res.status(404).render("status404.ejs");
+    }
+  }
+
+
+  
+
 });
 
 /**
