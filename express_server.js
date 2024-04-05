@@ -85,6 +85,24 @@ const getUserByEmail = (email) => {
   return null;
 };
 
+/**
+ * Function to obtain the urls for a particular user
+ * @param {string} id
+ * @returns {object}
+ */
+
+const urlsForUser = (id) => {
+  const userUrls = {};
+  for (let url in urlDatabase) {
+    console.log(urlDatabase[url].userID);
+    if (urlDatabase[url].userID === id) {
+      userUrls[url] = urlDatabase[url];
+    }
+  }
+  return userUrls;
+};
+
+
 /////////////////////////////////// ENDPOINTS ///////////////////////////////////////////////
 
 app.get("/", (req, res) => {
@@ -96,7 +114,7 @@ app.get("/", (req, res) => {
  */
 app.post("/urls", (req, res) => {
   if (!req.cookies["user_id"]) {
-    res.render("not_login.ejs");
+    res.status(401).render("status401.ejs");
   } else {
     const uuid = generateRandomString(6);
     urlDatabase[uuid] = {
@@ -180,17 +198,21 @@ app.post("/register", (req, res) => {
  * Endpoint to fetch all urls saved in the database
  */
 app.get("/urls", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-  };
-  if (req.cookies["user_id"]) {
-    const userID = req.cookies["user_id"];
-    const user = users[userID];
-    if (user) {
-      templateVars.user = user;
+  if (!req.cookies["user_id"]) {
+    res.status(401).render("status401");
+  } else {
+    const templateVars = {
+      urls: urlDatabase,
+    };
+    if (req.cookies["user_id"]) {
+      const userID = req.cookies["user_id"];
+      const user = users[userID];
+      if (user) {
+        templateVars.user = user;
+      }
     }
+    res.render("urls_index", templateVars);
   }
-  res.render("urls_index", templateVars);
 });
 
 /**
@@ -198,7 +220,7 @@ app.get("/urls", (req, res) => {
  */
 app.get("/urls/new", (req, res) => {
   if (!req.cookies["user_id"]) {
-    res.redirect("/login");
+    res.status(401).render("status401");
   } else {
     const templateVars = {};
     if (req.cookies["user_id"]) {
@@ -217,7 +239,7 @@ app.get("/urls/new", (req, res) => {
  */
 app.get(`/urls/:id`, (req, res) => {
   if (!req.cookies["user_id"]) {
-    res.redirect("/login");
+    res.status(401).render("status401");
   } else {
     const id = req.params.id;
     const longURL = urlDatabase[id].longURL;
