@@ -10,6 +10,13 @@ const express = require("express");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 
+const {
+  generateRandomString,
+  getUserByEmail,
+  urlsForUser,
+  validateLogin,
+  validateUrlOwnership,
+} = require("./helpers");
 /**
  * Express initialization
  */
@@ -23,11 +30,13 @@ app.set("view engine", "ejs");
  * Middleware
  */
 app.use(express.urlencoded({ extended: true })); // encoding for urls
-app.use(cookieSession({
-  name: 'session',
-  keys: ['awesome-key-in-env-variable'],
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}));
+app.use(
+  cookieSession({
+    name: "session",
+    keys: ["awesome-key-in-env-variable"],
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  })
+);
 
 /**
  * urls and tinyurls database
@@ -35,16 +44,16 @@ app.use(cookieSession({
 const urlDatabase = {
   b2xVn2: {
     longURL: "http://www.lighthouselabs.ca",
-    userID: "userRandomID"
+    userID: "userRandomID",
   },
   s9m5xK: {
     longURL: "http://www.google.com",
-    userID: "user2RandomID"
+    userID: "user2RandomID",
   },
   s7n6yl: {
     longURL: "http://www.google.com",
-    userID: "xvdrz"
-  }
+    userID: "xvdrz",
+  },
 };
 /**
  * users database
@@ -67,97 +76,6 @@ const users = {
   },
 };
 
-/////////////////////////////////// HELPERS ///////////////////////////////////////////////
-
-/**
- * Function to generate a random string thar will be use as a unique identifier for tinyurls
- * @param {number} lengthOfId
- * @returns {string}
- */
-const generateRandomString = (lengthOfId) => {
-  let randomString = "";
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let n = 0; n < lengthOfId; n++) {
-    randomString += characters[Math.floor(Math.random() * characters.length)];
-  }
-  return randomString;
-};
-
-/**
- * Function to check if an user exists into the database.
- * @param {string} id
- * @param {object} database
- * @returns {object}
- */
-
-const getUserByEmail = (email) => {
-  const id = Object.keys(users).find(key => users[key].email === email);
-  if (id) {
-    return users[id];
-  }
-  return null;
-};
-
-/**
- * Function to obtain the urls for a particular user
- * @param {string} id
- * @returns {object}
- */
-
-const urlsForUser = (id) => {
-  const userUrls = {};
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      userUrls[url] = urlDatabase[url];
-    }
-  }
-  return userUrls;
-};
-
-/**
- * Function to validate if user is valid and logged in
- * @param {object} req - The request object.
- * @param {object} res - The response object
- * @returns {string}
-*/
-const validateLogin = (req, res) => {
-  const userId = req.session.userId;
-  if (!userId) {
-    res.status(401).render("status401");
-  } else {
-    return userId;
-  }
-};
-
-/**
- * Function that validates ownership of a URL in the database and executes a callback
- * if valid.
- * @param {object} req - The request object.
- * @param {object} res - The response object
- * @param {Function} callback - Callback function to execute if url ownership is valid
- * @returns {string} - Id of the valid url
- */
-const validateUrlOwnership = (req, res, callback)=> {
-  const userID = validateLogin(req, res);
-  if (userID) {
-    const id = req.params.id;
-    // Checks if the id exists in the database
-    const urlObject = urlDatabase[id];
-    if (urlObject) {
-      // Validates ownership of the URL
-      if (urlObject.userID === userID) {
-        callback(id, users[userID]);
-      } else {
-        res.status(403).render("status403");
-      }
-    } else {
-      res.status(404).render("status404");
-    }
-  }
-  
-};
-
 /////////////////////////////////// ENDPOINTS ///////////////////////////////////////////////
 
 app.get("/", (req, res) => {
@@ -172,7 +90,7 @@ app.post("/urls", (req, res) => {
   const uuid = generateRandomString(6);
   urlDatabase[uuid] = {
     longURL: req.body.longURL,
-    userID
+    userID,
   };
   res.redirect(`/urls/${uuid}`);
 });
@@ -181,7 +99,7 @@ app.post("/urls", (req, res) => {
  * Endpoint to delete urls from database.
  */
 app.post("/urls/:id/delete", (req, res) => {
-  validateUrlOwnership(req, res, (id)=>{
+  validateUrlOwnership(req, res, urlDatabase, users, (id) => {
     delete urlDatabase[id];
     res.redirect("/urls");
   });
@@ -191,7 +109,7 @@ app.post("/urls/:id/delete", (req, res) => {
  * Endpoint to update urls on database.
  */
 app.post(`/urls/:id`, (req, res) => {
-  validateUrlOwnership(req, res, (id)=>{
+  validateUrlOwnership(req, res, urlDatabase, users, (id) => {
     urlDatabase[id].longURL = req.body.updatedURL;
     res.redirect("/urls");
   });
@@ -203,14 +121,18 @@ app.post(`/urls/:id`, (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const user = getUserByEmail(email);
+  const user = getUserByEmail(email, users);
   if (user !== null) {
     if (bcrypt.compareSync(password, user.password)) {
       req.session.userId = user.id;
       res.redirect("/urls");
     } else res.status(403).send("Password incorrect. Please try again.");
   } else {
-    res.status(403).send("User can not be found. Please login with a correct email or register first.");
+    res
+      .status(403)
+      .send(
+        "User can not be found. Please login with a correct email or register first."
+      );
   }
 });
 
@@ -228,9 +150,9 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const exisitingUser = getUserByEmail(email);
+  const exisitingUser = getUserByEmail(email, users);
   if (exisitingUser || !email || !password) {
-    const templateVars = {exisitingUser, email, password};
+    const templateVars = { exisitingUser, email, password };
     res.status(400).render("status400.ejs", templateVars);
   } else {
     const hashedPassword = bcrypt.hashSync(password, 10);
@@ -238,7 +160,7 @@ app.post("/register", (req, res) => {
     users[userId] = {
       id: userId,
       email,
-      password: hashedPassword
+      password: hashedPassword,
     };
     req.session.userId = users[userId].id;
     res.redirect(`/urls`);
@@ -254,7 +176,7 @@ app.get("/urls", (req, res) => {
     const user = users[userID];
     const templateVars = {
       user,
-      urls: urlsForUser(userID),
+      urls: urlsForUser(userID, urlDatabase),
     };
     res.render("urls_index", templateVars);
   }
@@ -267,7 +189,7 @@ app.get("/urls/new", (req, res) => {
   const userID = validateLogin(req, res);
   if (userID) {
     const templateVars = {
-      user: users[userID]
+      user: users[userID],
     };
     res.render("urls_new", templateVars);
   }
@@ -277,7 +199,7 @@ app.get("/urls/new", (req, res) => {
  * Endpoint to fetch one url saved in the database
  */
 app.get(`/urls/:id`, (req, res) => {
-  validateUrlOwnership(req, res, (id, user)=>{
+  validateUrlOwnership(req, res, urlDatabase, users, (id, user) => {
     const urlObject = urlDatabase[id];
     const longURL = urlObject.longURL;
     const templateVars = { id, longURL, user };
@@ -318,11 +240,8 @@ app.get("/login", (req, res) => {
   } else {
     res.redirect("/urls");
   }
-  
 });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-
