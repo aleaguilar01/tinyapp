@@ -7,7 +7,7 @@
  * Dependencies
  */
 const express = require("express");
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 
 /**
@@ -23,7 +23,11 @@ app.set("view engine", "ejs");
  * Middleware
  */
 app.use(express.urlencoded({ extended: true })); // encoding for urls
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['awesome-key-in-env-variable'],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 
 /**
  * urls and tinyurls database
@@ -118,7 +122,7 @@ const urlsForUser = (id) => {
  * @returns {string}
 */
 const validateLogin = (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session.userId;
   if (!userId) {
     res.status(401).render("status401");
   } else {
@@ -201,9 +205,8 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
   const user = getUserByEmail(email);
   if (user !== null) {
-    const id = user.id;
-    if (bcrypt.compareSync(password, users[id].password)) {
-      res.cookie("user_id", users[id].id);
+    if (bcrypt.compareSync(password, user.password)) {
+      req.session.userId = user.id;
       res.redirect("/urls");
     } else res.status(403).send("Password incorrect. Please try again.");
   } else {
@@ -215,7 +218,7 @@ app.post("/login", (req, res) => {
  * Endpoint to logout user.
  */
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session.userId = null;
   res.redirect("/login");
 });
 
@@ -237,7 +240,7 @@ app.post("/register", (req, res) => {
       email,
       password: hashedPassword
     };
-    res.cookie('user_id', users[userId].id);
+    req.session.userId = users[userId].id;
     res.redirect(`/urls`);
   }
 });
@@ -299,7 +302,7 @@ app.get("/u/:id", (req, res) => {
  * Endpoint to fetch the registration page if the user is not already loged in
  */
 app.get("/register", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  if (!req.session.userId) {
     res.render("register.ejs");
   } else {
     res.redirect("/urls");
@@ -310,7 +313,7 @@ app.get("/register", (req, res) => {
  * Endpoint to fetch the login page
  */
 app.get("/login", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  if (!req.session.userId) {
     res.render("login.ejs");
   } else {
     res.redirect("/urls");
