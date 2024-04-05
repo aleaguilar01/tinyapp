@@ -128,12 +128,22 @@ app.post("/urls", (req, res) => {
  * Endpoint to delete urls from database.
  */
 app.post("/urls/:id/delete", (req, res) => {
-  if (!req.cookies["user_id"]) {
-    res.redirect("/login");
+  const userId = req.cookies["user_id"];
+  if (!userId) {
+    res.status(401).render("status401");
   } else {
     const id = req.params.id;
-    delete urlDatabase[id];
-    res.redirect("/urls");
+    const urlObject = urlDatabase[id];
+    if (urlObject) {
+      if (urlObject.userID === userId) {
+        delete urlDatabase[id];
+        res.redirect("/urls");
+      } else {
+        res.status(403).render("status403");
+      }
+    } else {
+      res.status(404).render("status404.ejs");
+    }
   }
 });
 
@@ -238,16 +248,22 @@ app.get(`/urls/:id`, (req, res) => {
     res.status(401).render("status401");
   } else {
     const id = req.params.id;
-    const longURL = urlDatabase[id].longURL;
-    const templateVars = { id, longURL };
-    if (req.cookies["user_id"]) {
-      const userID = req.cookies["user_id"];
+    const userID = req.cookies["user_id"];
+    const urlObject = urlDatabase[id];
+    if (urlObject) {
+      const longURL = urlObject.longURL;
       const user = users[userID];
-      if (user) {
-        templateVars.user = user;
+      if (urlObject.userID === userID) {
+        const templateVars = { id, longURL, user };
+        res.render("urls_show.ejs", templateVars);
+      } else {
+        res.status(403).render("status403");
       }
+    } else {
+      res.status(404).render("status404.ejs");
     }
-    res.render("urls_show.ejs", templateVars);
+
+    
   }
   
 });
