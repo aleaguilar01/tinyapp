@@ -36,6 +36,10 @@ const urlDatabase = {
     longURL: "http://www.google.com",
     userID: "user2RandomID"
   },
+  s7n6yl: {
+    longURL: "http://www.google.com",
+    userID: "xvdrz"
+  }
 };
 /**
  * users database
@@ -50,6 +54,11 @@ const users = {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk",
+  },
+  xvdrz: {
+    id: "xvdrz",
+    email: "test@e.com",
+    password: "123",
   },
 };
 
@@ -94,7 +103,6 @@ const getUserByEmail = (email) => {
 const urlsForUser = (id) => {
   const userUrls = {};
   for (let url in urlDatabase) {
-    console.log(urlDatabase[url].userID);
     if (urlDatabase[url].userID === id) {
       userUrls[url] = urlDatabase[url];
     }
@@ -102,6 +110,48 @@ const urlsForUser = (id) => {
   return userUrls;
 };
 
+/**
+ * Function to validate if user is valid and logged in
+ * @param {object} req - The request object.
+ * @param {object} res - The response object
+ * @returns {string}
+*/
+const validateLogin = (req, res) => {
+  const userId = req.cookies["user_id"];
+  if (!userId) {
+    res.status(401).render("status401");
+  } else {
+    return userId;
+  }
+};
+
+/**
+ * Function that validates ownership of a URL in the database and executes a callback
+ * if valid.
+ * @param {object} req - The request object.
+ * @param {object} res - The response object
+ * @param {Function} callback - Callback function to execute if url ownership is valid
+ * @returns {string} - Id of the valid url
+ */
+const validateUrlOwnership = (req, res, callback)=> {
+  const userID = validateLogin(req, res);
+  if (userID) {
+    const id = req.params.id;
+    // Checks if the id exists in the database
+    const urlObject = urlDatabase[id];
+    if (urlObject) {
+      // Validates ownership of the URL
+      if (urlObject.userID === userID) {
+        callback(id, users[userID]);
+      } else {
+        res.status(403).render("status403");
+      }
+    } else {
+      res.status(404).render("status404");
+    }
+  }
+  
+};
 
 /////////////////////////////////// ENDPOINTS ///////////////////////////////////////////////
 
@@ -113,65 +163,33 @@ app.get("/", (req, res) => {
  * Endpoint to create tiny urls and save them in memory database
  */
 app.post("/urls", (req, res) => {
-  if (!req.cookies["user_id"]) {
-    res.status(401).render("status401.ejs");
-  } else {
-    const uuid = generateRandomString(6);
-    urlDatabase[uuid] = {
-      longURL: req.body.longURL,
-      userID: req.cookies["user_id"]};
-    res.redirect(`/urls/${uuid}`);
-  }
+  const userID = validateLogin(req, res);
+  const uuid = generateRandomString(6);
+  urlDatabase[uuid] = {
+    longURL: req.body.longURL,
+    userID
+  };
+  res.redirect(`/urls/${uuid}`);
 });
 
 /**
  * Endpoint to delete urls from database.
  */
 app.post("/urls/:id/delete", (req, res) => {
-  const userId = req.cookies["user_id"];
-  if (!userId) {
-    res.status(401).render("status401");
-  } else {
-    const id = req.params.id;
-    const urlObject = urlDatabase[id];
-    if (urlObject) {
-      if (urlObject.userID === userId) {
-        delete urlDatabase[id];
-        res.redirect("/urls");
-      } else {
-        res.status(403).render("status403");
-      }
-    } else {
-      res.status(404).render("status404.ejs");
-    }
-  }
+  validateUrlOwnership(req, res, (id)=>{
+    delete urlDatabase[id];
+    res.redirect("/urls");
+  });
 });
 
 /**
  * Endpoint to update urls on database.
  */
 app.post(`/urls/:id`, (req, res) => {
-  const userId = req.cookies["user_id"];
-  if (!userId) {
-    res.status(401).render("status401");
-  } else {
-    const id = req.params.id;
-    const urlObject = urlDatabase[id];
-    if (urlObject) {
-      if (urlObject.userID === userId) {
-        urlDatabase[id].longURL = req.body.updatedURL;
-        res.redirect("/urls");
-      } else {
-        res.status(403).render("status403");
-      }
-    } else {
-      res.status(404).render("status404.ejs");
-    }
-  }
-
-
-  
-
+  validateUrlOwnership(req, res, (id)=>{
+    urlDatabase[id].longURL = req.body.updatedURL;
+    res.redirect("/urls");
+  });
 });
 
 /**
@@ -226,14 +244,12 @@ app.post("/register", (req, res) => {
  * Endpoint to fetch all urls saved in the database
  */
 app.get("/urls", (req, res) => {
-  const userId = req.cookies["user_id"];
-  if (!userId) {
-    res.status(401).render("status401");
-  } else {
-    const user = users[userId];
+  const userID = validateLogin(req, res);
+  if (userID) {
+    const user = users[userID];
     const templateVars = {
       user,
-      urls: urlsForUser(userId),
+      urls: urlsForUser(userID),
     };
     res.render("urls_index", templateVars);
   }
@@ -243,17 +259,11 @@ app.get("/urls", (req, res) => {
  * Endpoint to fetch the form to submit a long URL.
  */
 app.get("/urls/new", (req, res) => {
-  if (!req.cookies["user_id"]) {
-    res.status(401).render("status401");
-  } else {
-    const templateVars = {};
-    if (req.cookies["user_id"]) {
-      const userID = req.cookies["user_id"];
-      const user = users[userID];
-      if (user) {
-        templateVars.user = user;
-      }
-    }
+  const userID = validateLogin(req, res);
+  if (userID) {
+    const templateVars = {
+      user: users[userID]
+    };
     res.render("urls_new", templateVars);
   }
 });
@@ -262,28 +272,12 @@ app.get("/urls/new", (req, res) => {
  * Endpoint to fetch one url saved in the database
  */
 app.get(`/urls/:id`, (req, res) => {
-  if (!req.cookies["user_id"]) {
-    res.status(401).render("status401");
-  } else {
-    const id = req.params.id;
-    const userID = req.cookies["user_id"];
+  validateUrlOwnership(req, res, (id, user)=>{
     const urlObject = urlDatabase[id];
-    if (urlObject) {
-      const longURL = urlObject.longURL;
-      const user = users[userID];
-      if (urlObject.userID === userID) {
-        const templateVars = { id, longURL, user };
-        res.render("urls_show.ejs", templateVars);
-      } else {
-        res.status(403).render("status403");
-      }
-    } else {
-      res.status(404).render("status404.ejs");
-    }
-
-    
-  }
-  
+    const longURL = urlObject.longURL;
+    const templateVars = { id, longURL, user };
+    res.render("urls_show", templateVars);
+  });
 });
 
 /**
@@ -292,14 +286,6 @@ app.get(`/urls/:id`, (req, res) => {
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id].longURL;
-  const templateVars = {};
-  if (req.cookies["user_id"]) {
-    const userID = req.cookies["user_id"];
-    const user = users[userID];
-    if (user) {
-      templateVars.user = user;
-    }
-  }
   if (!urlDatabase[id]) {
     res.status(404).render("status404.ejs");
   } else {
