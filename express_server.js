@@ -198,19 +198,15 @@ app.post("/register", (req, res) => {
  * Endpoint to fetch all urls saved in the database
  */
 app.get("/urls", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  const userId = req.cookies["user_id"];
+  if (!userId) {
     res.status(401).render("status401");
   } else {
+    const user = users[userId];
     const templateVars = {
-      urls: urlDatabase,
+      user,
+      urls: urlsForUser(userId),
     };
-    if (req.cookies["user_id"]) {
-      const userID = req.cookies["user_id"];
-      const user = users[userID];
-      if (user) {
-        templateVars.user = user;
-      }
-    }
     res.render("urls_index", templateVars);
   }
 });
