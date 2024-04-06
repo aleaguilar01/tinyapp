@@ -151,13 +151,13 @@ app.post("/login", (req, res) => {
       req.session.userId = user.id;
       res.redirect("/urls");
     } else {
-      res.status(403).send("Password incorrect. Please try again.");
+      res.status(403).render("incorrect_user_or_password");
     }
   } else {
     res
       .status(403)
-      .send(
-        "User can not be found. Please login with a correct email or register first."
+      .render(
+        "incorrect_user_or_password"
       );
   }
 });

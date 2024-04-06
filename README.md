@@ -39,6 +39,11 @@ The following are the main endpoints provided by TinyApp Backend:
 - `POST /logout`: Logs out the current user.
 - `GET /u/:id`: Redirects to the long URL associated with the specified short URL ID.
 
+## Strech
+- `Method Override`: Uses forms PUT and DELETE.
+- `Analytics`: Keeps track of when an URL was created, the number of unique visits, the vitis log and displays it on the edit page for the URL.
+
+
 ## Installation
 
 1. Clone the repository: `git clone https://github.com/aleaguilar01/tinyapp.git`
