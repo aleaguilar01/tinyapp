@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 
-const { getUserByEmail } = require('../helpers.js');
+const { getUserByEmail, urlsForUser } = require('../helpers.js');
 
 const testUsers = {
   "userRandomID": {
@@ -13,6 +13,21 @@ const testUsers = {
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
+};
+
+const testUrls = {
+  "abcd": {
+    longUrl: "www.google.com",
+    userID: "userRandomID"
+  },
+  "123": {
+    longUrl: "www.gmail.com",
+    userID: "userRandomID"
+  },
+  "sebfg": {
+    longUrl: "www.hotmail.com",
+    userID: "user2RandomID"
+  },
 };
 
 describe('getUserByEmail', function() {
@@ -32,6 +47,30 @@ describe('getUserByEmail', function() {
     const user = getUserByEmail("", testUsers);
     const expectedUser = null;
     assert.equal(user, expectedUser);
+  });
+
+});
+
+describe('urlsForUser', function() {
+  it('should return an object with the users urls', () => {
+    const urlsObject = urlsForUser("userRandomID", testUrls);
+    const expdectedurlsObject = {
+      "abcd": {
+        longUrl: "www.google.com",
+        userID: "userRandomID"
+      },
+      "123": {
+        longUrl: "www.gmail.com",
+        userID: "userRandomID"
+      },
+    };
+    assert.deepEqual(urlsObject, expdectedurlsObject);
+  });
+
+  it('should return an empty object if the user has no urls stored', () => {
+    const urlsObject = urlsForUser("user3RandomID", testUrls);
+    const expdectedurlsObject = {};
+    assert.deepEqual(urlsObject, expdectedurlsObject);
   });
 
 });
