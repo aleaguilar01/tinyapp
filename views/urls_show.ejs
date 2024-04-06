@@ -23,7 +23,7 @@
       </div>
       <div class="card-footer text-muted">
         <h4 class="card-title">Edit: </h4>
-        <form method="POST" action="/urls/<%= id %>">New URL: <input name="updatedURL" type="text"> <button type="submit" class="btn btn-primary">Update</button></form>
+        <form method="POST" action="/urls/<%= id %>?_method=PUT">New URL: <input name="updatedURL" type="text"> <button type="submit" class="btn btn-primary">Update</button></form>
       </div>
     </div>
     <!-- Bootstrap JS -->

@@ -9,6 +9,7 @@
 const express = require("express");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
+const methodOverride = require('method-override');
 
 const {
   generateRandomString,
@@ -37,6 +38,7 @@ app.use(
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   })
 );
+app.use(methodOverride('_method'));
 
 ///////////////////////HARD CODED DATABASES /////////////////////////////////
 
@@ -105,7 +107,7 @@ app.post("/urls", (req, res) => {
 /**
  * Endpoint to delete urls from database.
  */
-app.post("/urls/:id/delete", (req, res) => {
+app.delete("/urls/:id/delete", (req, res) => {
   validateUrlOwnership(req, res, urlDatabase, users, (id) => {
     delete urlDatabase[id];
     res.redirect("/urls");
@@ -115,7 +117,7 @@ app.post("/urls/:id/delete", (req, res) => {
 /**
  * Endpoint to update urls on database.
  */
-app.post(`/urls/:id`, (req, res) => {
+app.put(`/urls/:id`, (req, res) => {
   validateUrlOwnership(req, res, urlDatabase, users, (id) => {
     urlDatabase[id].longURL = req.body.updatedURL;
     res.redirect("/urls");
