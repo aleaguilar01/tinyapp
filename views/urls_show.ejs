@@ -19,6 +19,16 @@
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
         <p class="card-text">
           Short URL ID: <a href="<%= longURL %>"><%= id %></a>
+        <br>
+          Unique visits: <%= uniqueVisitorsIds.length %>
+        <br>
+          This url has been visited <%= visitLog.length %> times.
+        <br>
+         Visit log: <% for (let visit of visitLog) { %>
+          <%= visit.id %> : <%= visit.date %>
+          <% } %>
+        <br>
+          Created At: <%= createdAt.toLocaleString() %>
         </p>
       </div>
       <div class="card-footer text-muted">

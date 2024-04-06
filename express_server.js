@@ -49,14 +49,23 @@ const urlDatabase = {
   b2xVn2: {
     longURL: "http://www.lighthouselabs.ca",
     userID: "userRandomID",
+    createdAt: new Date,
+    uniqueVisitorsIds: [],
+    visitLog: []
   },
   s9m5xK: {
     longURL: "http://www.google.com",
     userID: "user2RandomID",
+    createdAt: new Date,
+    uniqueVisitorsIds: [],
+    visitLog: []
   },
   s7n6yl: {
     longURL: "http://www.google.com",
     userID: "xvdrz",
+    createdAt: new Date,
+    uniqueVisitorsIds: [],
+    visitLog: []
   },
 };
 /**
@@ -96,9 +105,15 @@ app.post("/urls", (req, res) => {
   const userID = validateLogin(req, res);
   if (userID) {
     const uuid = generateRandomString(6);
+    const createdAt = new Date;
+    const uniqueVisitorsIds = [];
+    const visitLog = [];
     urlDatabase[uuid] = {
       longURL: req.body.longURL,
       userID,
+      createdAt,
+      uniqueVisitorsIds,
+      visitLog
     };
     res.redirect(`/urls/${uuid}`);
   }
@@ -212,8 +227,8 @@ app.get("/urls/new", (req, res) => {
 app.get(`/urls/:id`, (req, res) => {
   validateUrlOwnership(req, res, urlDatabase, users, (id, user) => {
     const urlObject = urlDatabase[id];
-    const longURL = urlObject.longURL;
-    const templateVars = { id, longURL, user };
+    console.log(urlObject);
+    const templateVars = { id, ...urlObject, user };
     res.render("urls_show", templateVars);
   });
 });
@@ -223,11 +238,21 @@ app.get(`/urls/:id`, (req, res) => {
  */
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id].longURL;
-  if (!urlDatabase[id]) {
+  const urlObject = urlDatabase[id];
+  if (!urlObject) {
     res.status(404).render("status404.ejs");
   } else {
-    res.redirect(longURL);
+    const visitorId = req.session.visitorId || generateRandomString(6);
+
+    if (!req.session.visitorId) {
+      urlObject.uniqueVisitorsIds.push(visitorId);
+      req.session.visitorId = visitorId;
+    }
+    urlObject.visitLog.push({
+      date: new Date(),
+      id: visitorId
+    });
+    res.redirect(urlObject.longURL);
   }
 });
 
