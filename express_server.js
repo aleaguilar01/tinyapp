@@ -26,10 +26,10 @@ const PORT = 8080; // default port 8080
 //configuration for view engine as ejs
 app.set("view engine", "ejs");
 
-/**
- * Middleware
- */
+////////////////////////// Middleware/////////////////////////////////////
+
 app.use(express.urlencoded({ extended: true })); // encoding for urls
+app.use(express.json()); // decode JSON information
 app.use(
   cookieSession({
     name: "session",
@@ -37,6 +37,8 @@ app.use(
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   })
 );
+
+///////////////////////HARD CODED DATABASES /////////////////////////////////
 
 /**
  * urls and tinyurls database
@@ -79,7 +81,10 @@ const users = {
 /////////////////////////////////// ENDPOINTS ///////////////////////////////////////////////
 
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  const userID = validateLogin(req, res);
+  if (userID) {
+    res.redirect("/urls");
+  }
 });
 
 /**
@@ -87,12 +92,14 @@ app.get("/", (req, res) => {
  */
 app.post("/urls", (req, res) => {
   const userID = validateLogin(req, res);
-  const uuid = generateRandomString(6);
-  urlDatabase[uuid] = {
-    longURL: req.body.longURL,
-    userID,
-  };
-  res.redirect(`/urls/${uuid}`);
+  if (userID) {
+    const uuid = generateRandomString(6);
+    urlDatabase[uuid] = {
+      longURL: req.body.longURL,
+      userID,
+    };
+    res.redirect(`/urls/${uuid}`);
+  }
 });
 
 /**
@@ -126,7 +133,9 @@ app.post("/login", (req, res) => {
     if (bcrypt.compareSync(password, user.password)) {
       req.session.userId = user.id;
       res.redirect("/urls");
-    } else res.status(403).send("Password incorrect. Please try again.");
+    } else {
+      res.status(403).send("Password incorrect. Please try again.");
+    }
   } else {
     res
       .status(403)
@@ -245,3 +254,5 @@ app.get("/login", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+module.exports = app;
