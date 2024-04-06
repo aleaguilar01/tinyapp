@@ -56,6 +56,15 @@ The following are the main endpoints provided by TinyApp Backend:
 3. Register a new account or log in with an existing account.
 4. Create, edit, or delete URLs as needed.
 
+## Final Product
+!["Screenshot of URLs page"](https://github.com/aleaguilar01/tinyapp/blob/main/docs/urls.png?raw=true)
+
+!["Screenshot of edit page"](https://github.com/aleaguilar01/tinyapp/blob/main/docs/edit_url.png?raw=true)
+
+!["Screenshot of create TinyURL page"](https://github.com/aleaguilar01/tinyapp/blob/main/docs/create_tinyurl.png?raw=true)
+
+
+
 ## Contributing
 
 Contributions are welcome! If you find any issues or have suggestions for improvement, please open an issue or submit a pull request.
