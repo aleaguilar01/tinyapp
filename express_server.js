@@ -94,8 +94,9 @@ const users = {
 /////////////////////////////////// ENDPOINTS ///////////////////////////////////////////////
 
 app.get("/", (req, res) => {
-  const userID = validateLogin(req, res);
-  if (userID) {
+  if (!req.session.userId) {
+    res.redirect("/login");
+  } else {
     res.redirect("/urls");
   }
 });
@@ -199,7 +200,7 @@ app.post("/register", (req, res) => {
  * Endpoint to fetch all urls saved in the database
  */
 app.get("/urls", (req, res) => {
-  const userID = validateLogin(req, res);
+  const userID = validateLogin(req, res, true);
   if (userID) {
     const user = users[userID];
     const templateVars = {
@@ -214,7 +215,7 @@ app.get("/urls", (req, res) => {
  * Endpoint to fetch the form to submit a long URL.
  */
 app.get("/urls/new", (req, res) => {
-  const userID = validateLogin(req, res);
+  const userID = validateLogin(req, res, true);
   if (userID) {
     const templateVars = {
       user: users[userID],
@@ -229,7 +230,6 @@ app.get("/urls/new", (req, res) => {
 app.get(`/urls/:id`, (req, res) => {
   validateUrlOwnership(req, res, urlDatabase, users, (id, user) => {
     const urlObject = urlDatabase[id];
-    console.log(urlObject);
     const templateVars = { id, ...urlObject, user };
     res.render("urls_show", templateVars);
   });

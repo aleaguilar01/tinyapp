@@ -52,10 +52,15 @@ const urlsForUser = (id, database) => {
  * @param {object} res - The response object
  * @returns {string}
 */
-const validateLogin = (req, res) => {
+const validateLogin = (req, res, shouldRedirect = false) => {
   const userId = req.session.userId;
   if (!userId) {
-    res.status(401).render("status401");
+    if (shouldRedirect) {
+      res.redirect("/login");
+    } else {
+      res.status(401).render("status401");
+    }
+   
   } else {
     return userId;
   }

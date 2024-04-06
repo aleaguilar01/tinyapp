@@ -27,21 +27,21 @@ describe('Login and Access URL', function() {
       });
   });
 
-  it('should return 401 Unauthorized if user is not logged in when accesing /', function() {
+  it('should redirect to /login if user is not logged in when accessing /', function() {
     return chai.request(app)
-      .get('/')
+      .get('/').redirects(0)
       .then(function(res) {
-        // Check if the response status code is 401 Unauthorized
-        expect(res).to.have.status(401);
+        // Check if the Location header redirects to /login
+        expect(res).to.redirectTo('/login');
       });
   });
 
-  it('should return 401 Unauthorized if user is not logged in when accesing /urls/new', function() {
+  it('should redirect to /login if user is not logged in when accessing /urls/new', function() {
     return chai.request(app)
-      .get('/urls/new')
+      .get('/urls/new').redirects(0)
       .then(function(res) {
         // Check if the response status code is 401 Unauthorized
-        expect(res).to.have.status(401);
+        expect(res).to.redirectTo('/login');
       });
   });
 
