@@ -18,6 +18,7 @@ const {
   validateLogin,
   validateUrlOwnership,
 } = require("./helpers");
+
 /**
  * Express initialization
  */
@@ -27,7 +28,7 @@ const PORT = 8080; // default port 8080
 //configuration for view engine as ejs
 app.set("view engine", "ejs");
 
-////////////////////////// Middleware/////////////////////////////////////
+////////////////////////// MIDDLEWARE/////////////////////////////////////
 
 app.use(express.urlencoded({ extended: true })); // encoding for urls
 app.use(express.json()); // decode JSON information
@@ -68,6 +69,7 @@ const urlDatabase = {
     visitLog: []
   },
 };
+
 /**
  * users database
  */
