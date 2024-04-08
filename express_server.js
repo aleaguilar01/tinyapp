@@ -169,7 +169,7 @@ app.post("/login", (req, res) => {
  * Endpoint to logout user.
  */
 app.post("/logout", (req, res) => {
-  req.session.userId = null;
+  req.session = null;
   res.redirect("/login");
 });
 
